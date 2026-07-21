@@ -1,94 +1,119 @@
-# Next Estate
+# 🏠 Sahand Estate
 
-A full-stack real estate listing app built with Next.js 15, NextAuth, MongoDB Atlas, and Cloudinary — all free, no third-party auth services needed.
+A full-stack real estate listing platform built with **Next.js 15** and **React 19**. Users can sign up, sign in, browse and search property listings, and manage their own listings — including image uploads — from a personal dashboard.
 
-## Tech Stack (all free tier)
+**Live demo:** https://real-estate-hsno.onrender.com/
+**Repository:** https://github.com/James1oliveira/real-estate
 
-| Layer          | Service                        | Free Allowance              |
-|----------------|--------------------------------|-----------------------------|
-| Framework      | Next.js 15 (App Router)        | —                           |
-| Auth           | NextAuth.js (self-hosted)      | Unlimited, no restrictions  |
-| Database       | MongoDB Atlas                  | 512 MB                      |
-| Image Storage  | Cloudinary                     | 25 GB storage + bandwidth   |
-| Hosting        | Render                         | 750 hrs/month               |
+> ⚠️ The app is hosted on Render's free tier, so the first request after a period of inactivity may take up to a minute to spin up.
 
 ---
 
-## Local Setup
+## ✨ Features
 
-### 1. Install dependencies
-npm install
-
-### 2. Set up MongoDB Atlas (free)
-1. Create account at mongodb.com/atlas
-2. Create a free M0 cluster
-3. Under Database Access: add a user with a password
-4. Under Network Access: add 0.0.0.0/0
-5. Click Connect > Drivers > copy your connection string
-
-### 3. Set up Cloudinary (free)
-1. Create account at cloudinary.com
-2. From your Dashboard copy: Cloud Name, API Key, API Secret
-
-### 4. Generate a NextAuth secret
-Run this in your terminal:
-  node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-Copy the output as your NEXTAUTH_SECRET.
-
-### 5. Configure environment variables
-cp .env.example .env.local
-
-Fill in .env.local:
-  NEXTAUTH_URL=http://localhost:3000
-  NEXTAUTH_SECRET=your-generated-secret
-  MONGODB_URI=mongodb+srv://...
-  CLOUDINARY_CLOUD_NAME=...
-  CLOUDINARY_API_KEY=...
-  CLOUDINARY_API_SECRET=...
-  URL=http://localhost:3000
-
-### 6. Run locally
-npm run dev
+- **Authentication** — email/password sign up and sign in with `next-auth` (Credentials provider), passwords hashed with `bcryptjs`, JWT sessions.
+- **Listings CRUD** — create, read, update, and delete property listings (rent or sale).
+- **Image uploads** — up to 6 images per listing, uploaded to **Cloudinary** with automatic format/quality optimization and a 2MB per-file limit.
+- **Search & filters** — filter by search term, listing type (rent/sale), parking, furnished, and special offers, with sorting by price or date and paginated "Show more" loading.
+- **Special offers** — mark a listing with a discounted price; the UI automatically shows savings.
+- **Personal dashboard** — logged-in users see stats on their listings (total, for rent, for sale) and can edit or delete them.
+- **Listing detail page** — server-rendered listing page with an image gallery, features grid (beds/baths/parking/furnished), and owner-only edit/delete actions.
+- **Responsive UI** — styled with Tailwind CSS.
 
 ---
 
-## Deploying to Render
+## 🛠️ Tech Stack
 
-1. Push your code to GitHub
-2. Go to render.com > New Web Service > connect your repo
-3. Add all env vars from .env.example in the Render dashboard
-4. Set NEXTAUTH_URL and URL to your live Render URL
-5. Deploy!
+| Layer          | Technology                                  |
+|----------------|----------------------------------------------|
+| Framework      | Next.js 15 (App Router), React 19             |
+| Styling        | Tailwind CSS                                  |
+| Auth           | NextAuth.js (Credentials + JWT)               |
+| Database       | MongoDB with Mongoose                         |
+| Image storage  | Cloudinary                                    |
+| Icons          | react-icons                                   |
+| Deployment     | Render                                        |
 
 ---
 
-## Project Structure
+## 📁 Project Structure (key files)
 
-src/
-  app/
-    about/                    About page
-    api/
-      auth/
-        [...nextauth]/        NextAuth handler (sign in)
-        register/             POST: create new user account
-      listing/
-        create/               POST: create listing
-        get/                  POST: search/get listings
-        update/               POST: update listing
-      upload/                 POST: Cloudinary image upload
-    create-listing/           Create listing form
-    listing/[id]/             Single listing detail view
-    search/                   Search with filters
-    sign-in/                  Email/password sign-in page
-    sign-up/                  Registration page
-    update-listing/[id]/      Edit listing form
-  components/
-    AuthProvider.jsx          NextAuth SessionProvider wrapper
-    Header.jsx                Nav with sign in/out
-    ListingItem.jsx           Listing card component
-  lib/
-    models/
-      listing.model.js        Mongoose listing schema
-      user.model.js           Mongoose user schema (with hashed password)
-    mongodb/
-      mongoose.js             DB connection singleton
+```
+app/
+├── layout.js                        # Root layout, wraps app in AuthProvider + Header
+├── page.js                          # Home page — featured offers, rentals, sales
+├── globals.css                      # Tailwind base styles
+├── about/page.jsx                   # About page
+├── search/page.jsx                  # Search & filter listings
+├── sign-in/page.jsx                 # Sign in page
+├── sign-up/page.jsx                 # Sign up page
+├── dashboard/page.jsx               # User dashboard (manage own listings)
+├── create-listing/page.jsx          # Create a new listing
+├── update-listing/[id]/page.jsx     # Edit an existing listing
+├── listing/[id]/page.jsx            # Public listing detail page
+└── api/
+    ├── auth/[...nextauth]/route.js  # NextAuth config (Credentials provider)
+    ├── auth/register/route.js       # User registration endpoint
+    ├── upload/route.js              # Cloudinary image upload endpoint
+    └── listing/
+        ├── create/route.js          # Create listing
+        ├── get/route.js             # Fetch/search/filter listings
+        ├── update/route.js          # Update a listing (owner only)
+        └── delete/route.js          # Delete a listing (owner only)
+```
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- A MongoDB database (e.g. MongoDB Atlas)
+- A Cloudinary account
+
+---
+
+## 🔑 Environment Variables Reference
+
+| Variable                  | Description                                              |
+|----------------------------|------------------------------------------------------------|
+| `MONGODB_URI`             | MongoDB connection string                                  |
+| `NEXTAUTH_SECRET`         | Secret used to sign/encrypt NextAuth JWTs                  |
+| `NEXTAUTH_URL`            | Base URL of the app (used by NextAuth)                     |
+| `URL`                     | Base URL used for server-side fetches within the app       |
+| `CLOUDINARY_CLOUD_NAME`   | Cloudinary cloud name                                      |
+| `CLOUDINARY_API_KEY`      | Cloudinary API key                                         |
+| `CLOUDINARY_API_SECRET`   | Cloudinary API secret                                      |
+
+---
+
+## 📸 Image Uploads
+
+Images are uploaded via `POST /api/upload` as `multipart/form-data` (field name `files`). The endpoint requires an authenticated session, enforces a maximum of 6 files per request, and a 2MB size limit per file, then stores each image in Cloudinary under the `next-estate` folder with automatic quality/format optimization.
+
+## 🔍 Listing Search API
+
+`POST /api/listing/get` accepts a JSON body to filter and sort listings:
+
+```json
+{
+  "searchTerm": "downtown",
+  "type": "rent",
+  "parking": true,
+  "furnished": false,
+  "offer": false,
+  "sort": "regularPrice",
+  "order": "asc",
+  "startIndex": 0,
+  "limit": 9
+}
+```
+
+It can also be used to fetch a single listing by `listingId`, or all listings owned by a user via `userId`.
+
+---
+
+## 📄 License
+
+This project is available for personal and educational use. Feel free to fork and adapt it.
