@@ -3,6 +3,7 @@
 A full-stack real estate listing platform built with **Next.js 15** and **React 19**. Users can sign up, sign in, browse and search property listings, and manage their own listings — including image uploads — from a personal dashboard.
 
 **Live demo:** https://real-estate-hsno.onrender.com/
+
 **Repository:** https://github.com/James1oliveira/real-estate
 
 > ⚠️ The app is hosted on Render's free tier, so the first request after a period of inactivity may take up to a minute to spin up.
