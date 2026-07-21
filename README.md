@@ -1,120 +1,80 @@
-# 🏠 Sahand Estate
+Sahand Estate — Documentation
 
-A full-stack real estate listing platform built with **Next.js 15** and **React 19**. Users can sign up, sign in, browse and search property listings, and manage their own listings — including image uploads — from a personal dashboard.
+Live demo: https://real-estate-hsno.onrender.com/ 
+Repository: https://github.com/James1oliveira/real-estate
 
-**Live demo:** https://real-estate-hsno.onrender.com/
+Contents
+Business Use Case
+Technical Specification
+User Guide
+1. Business Use Case
 
-**Repository:** https://github.com/James1oliveira/real-estate
+Problem: Independent landlords and small agencies lack an affordable, self-service way to list properties online — existing platforms are costly, slow to update, and hard to manage.
 
-> ⚠️ The app is hosted on Render's free tier, so the first request after a period of inactivity may take up to a minute to spin up.
+Solution: Sahand Estate lets any registered user list, edit, and remove properties instantly, while visitors search and filter listings without needing an account.
 
----
+Users: Property owners/agents (list & manage), buyers/renters (browse & search).
 
-## ✨ Features
+Core use cases:
 
-- **Authentication** — email/password sign up and sign in with `next-auth` (Credentials provider), passwords hashed with `bcryptjs`, JWT sessions.
-- **Listings CRUD** — create, read, update, and delete property listings (rent or sale).
-- **Image uploads** — up to 6 images per listing, uploaded to **Cloudinary** with automatic format/quality optimization and a 2MB per-file limit.
-- **Search & filters** — filter by search term, listing type (rent/sale), parking, furnished, and special offers, with sorting by price or date and paginated "Show more" loading.
-- **Special offers** — mark a listing with a discounted price; the UI automatically shows savings.
-- **Personal dashboard** — logged-in users see stats on their listings (total, for rent, for sale) and can edit or delete them.
-- **Listing detail page** — server-rendered listing page with an image gallery, features grid (beds/baths/parking/furnished), and owner-only edit/delete actions.
-- **Responsive UI** — styled with Tailwind CSS.
+Register / sign in
+Browse listings and search/filter by type, price, amenities, and offers
+View full listing details (photos, price, description, features)
+Create, edit, and delete listings (owner only)
+Manage listings from a personal dashboard
+Mark a listing as a discounted "Offer"
 
----
+Business rules:
 
-## 🛠️ Tech Stack
+Only signed-in users can create/edit/delete listings, and only their own.
+Listings need 1–6 images (2MB max each).
+Discount price must be lower than regular price.
+A listing is either "rent" or "sale," not both.
 
-| Layer          | Technology                                  |
-|----------------|----------------------------------------------|
-| Framework      | Next.js 15 (App Router), React 19             |
-| Styling        | Tailwind CSS                                  |
-| Auth           | NextAuth.js (Credentials + JWT)               |
-| Database       | MongoDB with Mongoose                         |
-| Image storage  | Cloudinary                                    |
-| Icons          | react-icons                                   |
-| Deployment     | Render                                        |
+Out of scope (current version): messaging, payments/bookings, listing approval workflow, admin panel, map search.
 
----
+2. Technical Specification
 
-## 📁 Project Structure (key files)
+Stack: Next.js 15 (App Router) + React 19, Tailwind CSS, NextAuth (Credentials/JWT), MongoDB + Mongoose, Cloudinary for images, hosted on Render.
 
-```
-app/
-├── layout.js                        # Root layout, wraps app in AuthProvider + Header
-├── page.js                          # Home page — featured offers, rentals, sales
-├── globals.css                      # Tailwind base styles
-├── about/page.jsx                   # About page
-├── search/page.jsx                  # Search & filter listings
-├── sign-in/page.jsx                 # Sign in page
-├── sign-up/page.jsx                 # Sign up page
-├── dashboard/page.jsx               # User dashboard (manage own listings)
-├── create-listing/page.jsx          # Create a new listing
-├── update-listing/[id]/page.jsx     # Edit an existing listing
-├── listing/[id]/page.jsx            # Public listing detail page
-└── api/
-    ├── auth/[...nextauth]/route.js  # NextAuth config (Credentials provider)
-    ├── auth/register/route.js       # User registration endpoint
-    ├── upload/route.js              # Cloudinary image upload endpoint
-    └── listing/
-        ├── create/route.js          # Create listing
-        ├── get/route.js             # Fetch/search/filter listings
-        ├── update/route.js          # Update a listing (owner only)
-        └── delete/route.js          # Delete a listing (owner only)
-```
+Architecture: Server Components handle data-heavy/SEO pages (home, listing detail) with fetch(..., {cache: 'no-store'}); Client Components handle interactive forms (auth, create/update listing, dashboard, search) via internal API routes.
 
----
+Data models:
 
-## 🚀 Getting Started
+User: firstName, lastName, email, password (bcrypt hash), profilePicture.
+Listing: userRef, name, description, address, type (rent/sale), bedrooms, bathrooms, regularPrice, discountPrice, offer, parking, furnished, imageUrls[], timestamps.
 
-### Prerequisites
+API routes:
 
-- Node.js 18+
-- A MongoDB database (e.g. MongoDB Atlas)
-- A Cloudinary account
+Route	Auth	Purpose
+/api/auth/[...nextauth]	—	NextAuth login handler
+/api/auth/register	No	Create user account
+/api/upload	Yes	Upload ≤6 images (≤2MB) to Cloudinary
+/api/listing/create	Yes	Create listing
+/api/listing/get	No	Search/filter/paginate listings, or fetch by id/user
+/api/listing/update	Yes (owner)	Update listing
+/api/listing/delete	Yes (owner)	Delete listing
 
----
+Auth: NextAuth Credentials provider, bcrypt password compare, JWT sessions carrying user.id.
 
-## 🔑 Environment Variables Reference
+Ownership check: update/delete routes compare listing.userRef to session.user.id, rejecting with 403 if mismatched.
 
-| Variable                  | Description                                              |
-|----------------------------|------------------------------------------------------------|
-| `MONGODB_URI`             | MongoDB connection string                                  |
-| `NEXTAUTH_SECRET`         | Secret used to sign/encrypt NextAuth JWTs                  |
-| `NEXTAUTH_URL`            | Base URL of the app (used by NextAuth)                     |
-| `URL`                     | Base URL used for server-side fetches within the app       |
-| `CLOUDINARY_CLOUD_NAME`   | Cloudinary cloud name                                      |
-| `CLOUDINARY_API_KEY`      | Cloudinary API key                                         |
-| `CLOUDINARY_API_SECRET`   | Cloudinary API secret                                      |
+Env vars: MONGODB_URI, NEXTAUTH_SECRET, NEXTAUTH_URL, URL, CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET.
 
----
+Known constraints: no rate limiting, no Cloudinary cleanup on delete, dashboard fetches up to 100 listings unpaginated, no automated tests.
 
-## 📸 Image Uploads
+3. User Guide
 
-Images are uploaded via `POST /api/upload` as `multipart/form-data` (field name `files`). The endpoint requires an authenticated session, enforces a maximum of 6 files per request, and a 2MB size limit per file, then stores each image in Cloudinary under the `next-estate` folder with automatic quality/format optimization.
+Browsing: No account needed. Use the homepage sections (Offers, Rentals, Sales) or the Search page to filter by term, type, amenities, and offer status, and sort by price or date.
 
-## 🔍 Listing Search API
+Account: Sign up with name, email, and password (6+ characters); sign in with email/password.
 
-`POST /api/listing/get` accepts a JSON body to filter and sort listings:
+Creating a listing (sign-in required):
 
-```json
-{
-  "searchTerm": "downtown",
-  "type": "rent",
-  "parking": true,
-  "furnished": false,
-  "offer": false,
-  "sort": "regularPrice",
-  "order": "asc",
-  "startIndex": 0,
-  "limit": 9
-}
-```
+Fill in name, description, address, type, beds/baths, price (and discount price if marking as an Offer).
+Upload 1–6 photos (2MB max each) — the first photo becomes the cover image.
+Submit to publish immediately.
 
-It can also be used to fetch a single listing by `listingId`, or all listings owned by a user via `userId`.
+Managing listings: Your Dashboard shows stats and all your listings, with edit (pencil) and delete (trash, with confirmation) controls.
 
----
-
-## 📄 License
-
-This project is available for personal and educational use. Feel free to fork and adapt it.
+Editing: Opens a pre-filled form; update fields/photos and save.
